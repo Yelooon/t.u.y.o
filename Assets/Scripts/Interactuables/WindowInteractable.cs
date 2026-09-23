@@ -4,6 +4,8 @@ public class WindowInteractable : MonoBehaviour, IInteractable
 {
     private bool isOpen = false;
 
+    public bool IsOpen => isOpen;
+
     public void Interact()
     {
         isOpen = !isOpen;
@@ -25,11 +27,11 @@ public class WindowInteractable : MonoBehaviour, IInteractable
 
     private void OpenWindow()
     {
-        Debug.Log("Ventana abierta");
+        Debug.Log("🪟 Ventana ABIERTA");
     }
 
     private void CloseWindow()
     {
-        Debug.Log("Ventana cerrada");
+        Debug.Log("🪟 Ventana CERRADA");
     }
 }

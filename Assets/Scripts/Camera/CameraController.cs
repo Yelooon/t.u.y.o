@@ -58,6 +58,11 @@ public class CameraController : MonoBehaviour
         );
     }
 
+    public void LookFront()
+    {
+        SetView(CameraView.Forward, true);
+    }
+
     public void LookLeft()
     {
         switch (currentView)
