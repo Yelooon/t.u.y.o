@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using UnityEngine;
-
 public class CameraController : MonoBehaviour
 {
     public enum CameraView
@@ -48,14 +46,19 @@ public class CameraController : MonoBehaviour
         playerCamera.transform.position = Vector3.Lerp(
             playerCamera.transform.position,
             targetPosition,
-            transitionSpeed * Time.deltaTime
+            transitionSpeed * speedMultiplier * Time.deltaTime
         );
 
         playerCamera.transform.rotation = Quaternion.Slerp(
             playerCamera.transform.rotation,
             targetRotation,
-            transitionSpeed * Time.deltaTime
+            transitionSpeed * speedMultiplier * Time.deltaTime
         );
+    }
+
+    public void LookFront()
+    {
+        SetView(CameraView.Forward, true);
     }
 
     public void LookLeft()
@@ -153,5 +156,12 @@ public class CameraController : MonoBehaviour
             default:
                 return forwardPoint;
         }
+    }
+
+    private float speedMultiplier = 1f;
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        speedMultiplier = Mathf.Max(0.05f, multiplier);
     }
 }

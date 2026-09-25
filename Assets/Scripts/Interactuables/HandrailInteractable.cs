@@ -1,20 +1,25 @@
+using System.Collections;
 using UnityEngine;
 
 public class HandrailInteractable : MonoBehaviour, IInteractable
 {
+    [Header("Holding")]
+    [SerializeField] private float holdDuration = 2f;
+
     private bool isHolding = false;
+    private Coroutine releaseCoroutine;
+
+    public bool IsHolding => isHolding;
 
     public void Interact()
     {
-        isHolding = !isHolding;
-
         if (isHolding)
         {
-            GrabHandrail();
+            ReleaseHandrail();
         }
         else
         {
-            ReleaseHandrail();
+            GrabHandrail();
         }
     }
 
@@ -25,11 +30,46 @@ public class HandrailInteractable : MonoBehaviour, IInteractable
 
     private void GrabHandrail()
     {
-        Debug.Log("Jugador agarrado al pasamanos");
+        isHolding = true;
+
+        Debug.Log("Jugador agarrado al pasamanos.");
+
+        // Si había una cuenta anterior, la cancelamos
+        if (releaseCoroutine != null)
+        {
+            StopCoroutine(releaseCoroutine);
+        }
+
+        releaseCoroutine = StartCoroutine(AutoRelease());
+    }
+
+    private IEnumerator AutoRelease()
+    {
+        yield return new WaitForSeconds(holdDuration);
+
+        ReleaseHandrail();
+
+        releaseCoroutine = null;
+    }
+
+    public void ForceRelease()
+    {
+        if (!isHolding)
+            return;
+
+        ReleaseHandrail();
     }
 
     private void ReleaseHandrail()
     {
-        Debug.Log("Jugador soltó el pasamanos");
+        isHolding = false;
+
+        if (releaseCoroutine != null)
+        {
+            StopCoroutine(releaseCoroutine);
+            releaseCoroutine = null;
+        }
+
+        Debug.Log("Jugador soltó el pasamanos.");
     }
 }
