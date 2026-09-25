@@ -1917,8 +1917,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1835221190444a141b74fb62010811ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BusBrakeEvent
+  displayName: 
   handrail: {fileID: 1374177987}
   warningDuration: 1.5
+  fallEffectDuration: 4
+  onBrakeHit:
+    m_PersistentCalls:
+      m_Calls: []
+  onPlayerFell:
+    m_PersistentCalls:
+      m_Calls: []
+  onPlayerRecovered:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &520397340
 Transform:
   m_ObjectHideFlags: 0
@@ -1949,6 +1960,16 @@ MonoBehaviour:
   airConditioner: {fileID: 520397338}
   window: {fileID: 1779888135}
   temperatureThreshold: 3
+  recoverySpeed: 1.5
+  onPlayerOverheat:
+    m_PersistentCalls:
+      m_Calls: []
+  onPlayerFreeze:
+    m_PersistentCalls:
+      m_Calls: []
+  onPlayerRecovered:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &520397342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1961,13 +1982,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6a3a689824274244b58691ffb0d25d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickpocketEvent
+  displayName: 
   pickpocket: {fileID: 1562747046}
   position1: {fileID: 855066521}
   position2: {fileID: 1578634486}
   position3: {fileID: 855951467}
   timeBetweenMoves: 12
+  stealDelay: 5
   watchDuration: 5
   movementAudio: {fileID: 0}
+  showSoundCaptions: 1
   cameraController: {fileID: 1180631364}
 --- !u!114 &520397343
 MonoBehaviour:
@@ -1981,10 +2005,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28c3431fd8df3d34dbd2478d0327a7ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MotorcycleRobberyEvent
+  displayName: 
   window: {fileID: 1779888135}
+  approachTime: 1
   reactionTime: 3
   strangerFace: {fileID: 1128554576}
   motorcycleAudio: {fileID: 0}
+  showSoundCaptions: 1
 --- !u!114 &520397344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1997,12 +2024,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90595db7b438f054cb6f5be9a034fd54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GreedyVendorEvent
+  displayName: 
   candyQTE: {fileID: 608450244}
   vendor: {fileID: 1196627978}
   vendorStartPosition: {fileID: 399196976}
   vendorInteractionPosition: {fileID: 1742115914}
+  warningTime: 2
   approachTime: 1
+  leaveTime: 2
   warningAudio: {fileID: 0}
+  showSoundCaptions: 1
 --- !u!114 &520397345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2015,12 +2046,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68820a83c4449f94597684baf7746252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFOConspiracyEvent
+  displayName: 
   conspiranoic: {fileID: 433229493}
   startPosition: {fileID: 433229493}
   interactionPosition: {fileID: 433229493}
   approachTime: 1
   conversationTime: 10
+  leaveTime: 2
   conspiracyAudio: {fileID: 0}
+  showSoundCaptions: 1
   dialogue: {fileID: 1470487438}
 --- !u!1 &559603596
 GameObject:
@@ -6298,6 +6332,8 @@ MonoBehaviour:
   imagePool:
   - {fileID: 11400000, guid: b6be0e4c954eb394e9349782f21560c4, type: 2}
   - {fileID: 11400000, guid: c217ebd93f11eea4caa28aeb2fb7a04e, type: 2}
+  - {fileID: 11400000, guid: 4ecb9a0f7446c154b82ae2f95c71569a, type: 2}
+  - {fileID: 11400000, guid: 6dbc36151fe10d9469d746cd683a1cdc, type: 2}
   options:
   - {fileID: 1824570332}
   - {fileID: 1906412075}
@@ -6628,7 +6664,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFOImageOption
   dialogue: {fileID: 1470487438}
-  image: {fileID: 1510267069}
 --- !u!114 &1510267068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6672,7 +6707,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1510267069}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1510267067}
+        m_TargetAssemblyTypeName: UFOImageOption, Assembly-CSharp
+        m_MethodName: Select
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1510267069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7847,7 +7894,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFOImageOption
   dialogue: {fileID: 1470487438}
-  image: {fileID: 1824570334}
 --- !u!114 &1824570333
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7891,7 +7937,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1824570334}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1824570332}
+        m_TargetAssemblyTypeName: UFOImageOption, Assembly-CSharp
+        m_MethodName: Select
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1824570334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8227,7 +8285,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFOImageOption
   dialogue: {fileID: 1470487438}
-  image: {fileID: 1906412077}
 --- !u!114 &1906412076
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8271,7 +8328,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1906412077}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1906412075}
+        m_TargetAssemblyTypeName: UFOImageOption, Assembly-CSharp
+        m_MethodName: Select
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1906412077
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8605,7 +8674,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UFOImageOption
   dialogue: {fileID: 1470487438}
-  image: {fileID: 2022381086}
 --- !u!114 &2022381085
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8649,7 +8717,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2022381086}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2022381084}
+        m_TargetAssemblyTypeName: UFOImageOption, Assembly-CSharp
+        m_MethodName: Select
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2022381086
 MonoBehaviour:
   m_ObjectHideFlags: 0
