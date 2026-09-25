@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class GreedyVendorEvent : MonoBehaviour
+public class GreedyVendorEvent : BusEventBase
 {
     [Header("References")]
     [SerializeField] private CandyQTE candyQTE;
@@ -10,16 +10,27 @@ public class GreedyVendorEvent : MonoBehaviour
     [SerializeField] private Transform vendorInteractionPosition;
 
     [Header("Timing")]
+    [Tooltip("Tiempo entre el silbido y que empiece a caminar hacia ti.")]
+    [SerializeField] private float warningTime = 2f;
     [SerializeField] private float approachTime = 3f;
+    [SerializeField] private float leaveTime = 2f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource warningAudio;
+    [SerializeField] private bool showSoundCaptions = true;
 
-    private bool eventActive = false;
 
-    public void StartVendorEvent()
+    private void Start()
     {
-        if (eventActive)
+        MoveInstant(vendorStartPosition);
+    }
+
+    // Se mantiene para los botones de debug
+    public void StartVendorEvent() => Trigger();
+
+    public override void Trigger()
+    {
+        if (!CanTrigger)
             return;
 
         StartCoroutine(VendorSequence());
@@ -27,76 +38,30 @@ public class GreedyVendorEvent : MonoBehaviour
 
     private IEnumerator VendorSequence()
     {
-        eventActive = true;
+        BeginEvent();
 
-        Debug.Log("📢 Se escucha al vendedor...");
+        MoveInstant(vendorStartPosition);
 
         if (warningAudio != null)
             warningAudio.Play();
 
-        // Colocar al vendedor en su posición inicial
-        if (vendor != null && vendorStartPosition != null)
-        {
-            vendor.position = vendorStartPosition.position;
-            vendor.rotation = vendorStartPosition.rotation;
-        }
+        if (showSoundCaptions)
+            Alert("[Se escucha el silbido del vendedor]", AlertLevel.Info);
 
-        // El vendedor se acerca
-        yield return StartCoroutine(MoveVendorToPlayer());
+        yield return new WaitForSeconds(warningTime);
 
-        Debug.Log("🧍 El vendedor se acercó.");
+        yield return StartCoroutine(MoveTo(vendorInteractionPosition, approachTime));
 
-        VendorGivesCandy();
+        // Aquí pueden activar los modelos de dulces en las manos
+        Alert("¡El vendedor te llenó las manos de dulces!", AlertLevel.Warning);
 
         yield return new WaitForSeconds(1f);
-
-        Debug.Log("🍬 Vendedor: Si lo sostienes más de 5 segundos...");
+        Alert("Vendedor: Si lo sostienes más de 5 segundos...", AlertLevel.Info);
 
         yield return new WaitForSeconds(1f);
-
-        Debug.Log("🍬 Vendedor: ...ya debes pagármelo.");
+        Alert("Vendedor: ...ya debes pagármelo.", AlertLevel.Danger);
 
         StartCandyQTE();
-    }
-
-    private IEnumerator MoveVendorToPlayer()
-    {
-        if (vendor == null || vendorInteractionPosition == null)
-            yield break;
-
-        Vector3 startPosition = vendor.position;
-        Quaternion startRotation = vendor.rotation;
-
-        float timer = 0f;
-
-        while (timer < approachTime)
-        {
-            timer += Time.deltaTime;
-
-            float progress = timer / approachTime;
-
-            vendor.position = Vector3.Lerp(
-                startPosition,
-                vendorInteractionPosition.position,
-                progress
-            );
-
-            vendor.rotation = Quaternion.Slerp(
-                startRotation,
-                vendorInteractionPosition.rotation,
-                progress
-            );
-
-            yield return null;
-        }
-
-        vendor.position = vendorInteractionPosition.position;
-        vendor.rotation = vendorInteractionPosition.rotation;
-    }
-
-    private void VendorGivesCandy()
-    {
-        Debug.Log("🍬🍬🍬 El vendedor llenó las manos del jugador de dulces.");
     }
 
     private void StartCandyQTE()
@@ -104,34 +69,80 @@ public class GreedyVendorEvent : MonoBehaviour
         if (candyQTE == null)
         {
             Debug.LogWarning("CandyQTE no está asignado.");
+            StartCoroutine(LeaveSequence());
             return;
         }
 
-        candyQTE.StartQTE(
-            OnQTESuccess,
-            OnQTEFailed
-        );
+        candyQTE.StartQTE(OnQTESuccess, OnQTEFailed);
     }
 
     private void OnQTESuccess()
     {
-        Debug.Log("🍬✓ Jugador devolvió todos los dulces.");
-        Debug.Log("🧍 El vendedor se lleva sus dulces y se marcha.");
+        // Si el viaje terminó mientras el QTE corría, ignorar
+        if (!IsActive)
+            return;
 
-        EndVendorEvent();
+        Alert("Le devolviste todos los dulces", AlertLevel.Success);
+        StartCoroutine(LeaveSequence());
     }
 
     private void OnQTEFailed()
     {
-        Debug.Log("🍬✗ El jugador no pudo devolver los dulces.");
-        Debug.Log("💸 Vendedor: Entonces me los tienes que pagar.");
-        Debug.Log("💸 ROBO/PAGO: 100K");
+        if (!IsActive)
+            return;
 
-        EndVendorEvent();
+        Alert("Vendedor: Entonces me los tienes que pagar", AlertLevel.Danger);
+        StealBill("Vendedor avaricioso");
+        StartCoroutine(LeaveSequence());
     }
 
-    private void EndVendorEvent()
+    private IEnumerator LeaveSequence()
     {
-        eventActive = false;
+        yield return StartCoroutine(MoveTo(vendorStartPosition, leaveTime));
+        EndEvent();
+    }
+
+    private IEnumerator MoveTo(Transform target, float duration)
+    {
+        if (vendor == null || target == null)
+            yield break;
+
+        Vector3 fromPos = vendor.position;
+        Quaternion fromRot = vendor.rotation;
+
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / duration;
+
+            vendor.SetPositionAndRotation(
+                Vector3.Lerp(fromPos, target.position, progress),
+                Quaternion.Slerp(fromRot, target.rotation, progress));
+
+            yield return null;
+        }
+
+        vendor.SetPositionAndRotation(target.position, target.rotation);
+    }
+
+    private void MoveInstant(Transform target)
+    {
+        if (vendor == null || target == null)
+            return;
+
+        vendor.SetPositionAndRotation(target.position, target.rotation);
+    }
+
+    public override void CancelEvent()
+    {
+        StopAllCoroutines();
+
+        // Esconder la UI del minijuego si estaba en pantalla
+        if (candyQTE != null)
+            candyQTE.CancelQTE();
+
+        MoveInstant(vendorStartPosition);
+        base.CancelEvent();
     }
 }
