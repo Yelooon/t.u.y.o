@@ -4,15 +4,10 @@ using UnityEngine;
 public class UFOConspiracyEvent : BusEventBase
 {
     [Header("References")]
-    [SerializeField] private Transform conspiranoic;
-    [SerializeField] private Transform startPosition;
-    [SerializeField] private Transform interactionPosition;
+    [SerializeField] private Animator animator;
 
     [Header("Timing")]
-    [SerializeField] private float approachTime = 3f;
     [SerializeField] private float conversationTime = 10f;
-    [Tooltip("Tiempo que tarda en devolverse a su puesto al terminar.")]
-    [SerializeField] private float leaveTime = 2f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource conspiracyAudio;
@@ -20,6 +15,11 @@ public class UFOConspiracyEvent : BusEventBase
 
     [Header("Dialogue")]
     [SerializeField] private UFOConspiracyDialogue dialogue;
+
+    [Header("Animator Parameters")]
+    [SerializeField] private string molestarTrigger = "Molestar";
+    [SerializeField] private string asentirTrigger = "Asentir";
+    [SerializeField] private string negarTrigger = "Negar";
 
     // No roba plata: solo estorba. Puede coincidir con otras amenazas.
     public override bool IsMoneyThreat => false;
@@ -29,9 +29,10 @@ public class UFOConspiracyEvent : BusEventBase
 
     private bool isTalking = false;
 
-    private void Start()
+    private void Awake()
     {
-        MoveInstant(startPosition);
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
     }
 
     // Se mantiene para los botones de debug
@@ -49,12 +50,12 @@ public class UFOConspiracyEvent : BusEventBase
     {
         BeginEvent();
 
-        MoveInstant(startPosition);
-
         if (showSoundCaptions)
             Alert("[Alguien viene hablando de ovnis...]", AlertLevel.Info);
 
-        yield return StartCoroutine(MoveTo(interactionPosition, approachTime));
+        // Activa la transición para empezar a hablar/molestar
+        if (animator != null)
+            animator.SetTrigger(molestarTrigger);
 
         isTalking = true;
 
@@ -74,9 +75,10 @@ public class UFOConspiracyEvent : BusEventBase
             yield return null;
         }
 
-        // Se acabó el tiempo sin encontrar la respuesta: se va solo
+        // Se acabó el tiempo sin encontrar la respuesta
         Alert("El conspiranoico se cansó de hablar", AlertLevel.Info);
-        yield return StartCoroutine(StopTalkingAndLeave());
+        StopTalking();
+        EndEvent();
     }
 
     /// <summary>La llama UFOConspiracyDialogue cuando el jugador clickea la imagen correcta.</summary>
@@ -87,18 +89,27 @@ public class UFOConspiracyEvent : BusEventBase
 
         StopAllCoroutines();
 
+        // Ejecuta la animación de asentir (el Animator la devolverá a Idle según tus transiciones)
+        if (animator != null)
+            animator.SetTrigger(asentirTrigger);
+
         Alert("Conspiranoico: ¡¿VES?! ¡TÚ SÍ ENTIENDES!", AlertLevel.Success);
 
-        StartCoroutine(StopTalkingAndLeave());
+        StopTalking();
+        EndEvent();
     }
 
-    private IEnumerator StopTalkingAndLeave()
+    /// <summary>Llamar desde UFOConspiracyDialogue o UI cuando el jugador clickea una opción/imagen incorrecta.</summary>
+    public void WrongAnswer()
     {
-        StopTalking();
+        if (!IsActive || !isTalking)
+            return;
 
-        yield return StartCoroutine(MoveTo(startPosition, leaveTime));
+        // Ejecuta la animación de negar y regresa al estado de hablar
+        if (animator != null)
+            animator.SetTrigger(negarTrigger);
 
-        EndEvent();
+        Alert("Conspiranoico: ¡No, eso no tiene nada que ver con los aliens!", AlertLevel.Warning);
     }
 
     private void StopTalking()
@@ -113,38 +124,6 @@ public class UFOConspiracyEvent : BusEventBase
             dialogue.EndDialogue();
     }
 
-    private IEnumerator MoveTo(Transform target, float duration)
-    {
-        if (conspiranoic == null || target == null)
-            yield break;
-
-        Vector3 fromPos = conspiranoic.position;
-        Quaternion fromRot = conspiranoic.rotation;
-
-        float timer = 0f;
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float progress = timer / duration;
-
-            conspiranoic.SetPositionAndRotation(
-                Vector3.Lerp(fromPos, target.position, progress),
-                Quaternion.Slerp(fromRot, target.rotation, progress));
-
-            yield return null;
-        }
-
-        conspiranoic.SetPositionAndRotation(target.position, target.rotation);
-    }
-
-    private void MoveInstant(Transform target)
-    {
-        if (conspiranoic == null || target == null)
-            return;
-
-        conspiranoic.SetPositionAndRotation(target.position, target.rotation);
-    }
-
     public override void CancelEvent()
     {
         StopAllCoroutines();
@@ -152,7 +131,6 @@ public class UFOConspiracyEvent : BusEventBase
         if (isTalking)
             StopTalking();
 
-        MoveInstant(startPosition);
         base.CancelEvent();
     }
 }

@@ -118,13 +118,17 @@ public class UFOConspiracyDialogue : MonoBehaviour
         {
             Debug.Log("¡Encontraste la imagen relacionada con aliens!");
 
+            // Notifica al evento para activar la animación 'Asentir' y cerrar la interacción
             currentEvent.CorrectAnswer();
         }
         else
         {
             Debug.Log("¡Eso no tiene nada que ver con aliens!");
 
-            // Podemos generar otra combinación
+            // Dispara el trigger 'Negar' en el evento
+            currentEvent.WrongAnswer();
+
+            // Regenera opciones para darle otra oportunidad al jugador mientras el tiempo corre
             GenerateOptions();
         }
     }
