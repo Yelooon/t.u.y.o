@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class PickpocketEvent : MonoBehaviour
+public class PickpocketEvent : BusEventBase
 {
     [Header("Pickpocket")]
     [SerializeField] private Transform pickpocket;
@@ -13,50 +13,96 @@ public class PickpocketEvent : MonoBehaviour
 
     [Header("Timing")]
     [SerializeField] private float timeBetweenMoves = 5f;
+    [Tooltip("Tiempo que tienes estando él en la posición 3 antes de que te robe.")]
+    [SerializeField] private float stealDelay = 5f;
+    [Tooltip("Segundos seguidos que hay que mirarlo para que se devuelva.")]
     [SerializeField] private float watchDuration = 5f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource movementAudio;
+    [Tooltip("Muestra subtítulos de los pasos. Desactívalo si quieres que sea solo por audio.")]
+    [SerializeField] private bool showSoundCaptions = true;
 
     [Header("Camera")]
     [SerializeField] private CameraController cameraController;
 
     private int currentPosition = 1;
-    private bool eventActive = false;
 
     private void Start()
     {
-        // Inicializar físicamente al Pickpocket
         MovePickpocket(position1);
     }
 
-    // ESTE es el método que llamas desde el botón
-    public void StartPickpocket()
-    {
-        if (eventActive)
-            return;
+    // Se mantiene para los botones de debug
+    public void StartPickpocket() => Trigger();
 
-        eventActive = true;
+    public override void Trigger()
+    {
+        if (!CanTrigger)
+            return;
 
         StartCoroutine(PickpocketSequence());
     }
 
     private IEnumerator PickpocketSequence()
     {
-        Debug.Log("🧍 Pickpocket comenzó en posición 1.");
+        BeginEvent();
 
-        // Esperar antes de moverse a posición 2
         yield return new WaitForSeconds(timeBetweenMoves);
-
         MoveToPosition(2);
 
-        // Esperar antes de moverse a posición 3
-        yield return new WaitForSeconds(timeBetweenMoves);
+        if (showSoundCaptions)
+            Alert("[Pasos detrás de ti]", AlertLevel.Info);
 
+        yield return new WaitForSeconds(timeBetweenMoves);
         MoveToPosition(3);
 
-        // Comienza la fase de peligro
+        if (showSoundCaptions)
+            Alert("[Pasos MUY cerca de ti]", AlertLevel.Warning);
+
         yield return StartCoroutine(CheckIfPlayerWatches());
+    }
+
+    private IEnumerator CheckIfPlayerWatches()
+    {
+        float watchTimer = 0f;
+        float dangerTimer = 0f;
+
+        while (true)
+        {
+            dangerTimer += Time.deltaTime;
+
+            bool isWatching = cameraController != null &&
+                cameraController.CurrentView == CameraController.CameraView.Back;
+
+            if (isWatching)
+            {
+                watchTimer += Time.deltaTime;
+                ShowProgress("Vigilando al ladrón", watchTimer / watchDuration);
+
+                if (watchTimer >= watchDuration)
+                {
+                    Alert("El ladrón se echó para atrás", AlertLevel.Success);
+                    FinishPickpocket();
+                    yield break;
+                }
+            }
+            else
+            {
+                watchTimer = 0f;
+                HideProgress();
+            }
+
+            if (dangerTimer >= stealDelay)
+            {
+                Alert("¡Te bolsiquearon!", AlertLevel.Danger);
+                StealBill("Ladrón silencioso");
+                FinishPickpocket();
+                yield break;
+            }
+
+            yield return null;
+        }
     }
 
     private void MoveToPosition(int newPosition)
@@ -65,22 +111,15 @@ public class PickpocketEvent : MonoBehaviour
 
         switch (newPosition)
         {
-            case 1:
-                MovePickpocket(position1);
-                break;
-
-            case 2:
-                MovePickpocket(position2);
-                break;
-
-            case 3:
-                MovePickpocket(position3);
-                break;
+            case 1: MovePickpocket(position1); break;
+            case 2: MovePickpocket(position2); break;
+            case 3: MovePickpocket(position3); break;
         }
 
-        PlayMovementSound();
+        if (movementAudio != null)
+            movementAudio.Play();
 
-        Debug.Log("🧍 Pickpocket → posición " + currentPosition);
+        Debug.Log("Pickpocket -> posición " + currentPosition);
     }
 
     private void MovePickpocket(Transform target)
@@ -88,81 +127,25 @@ public class PickpocketEvent : MonoBehaviour
         if (pickpocket == null || target == null)
             return;
 
-        pickpocket.position = target.position;
-        pickpocket.rotation = target.rotation;
+        pickpocket.SetPositionAndRotation(target.position, target.rotation);
     }
 
-    private IEnumerator CheckIfPlayerWatches()
-    {
-        float watchTimer = 0f;
-        float dangerTimer = 0f;
-
-        Debug.Log("⚠️ Pickpocket está en posición 3.");
-
-        while (true)
-        {
-            dangerTimer += Time.deltaTime;
-
-            // Está mirando hacia atrás
-            if (cameraController.CurrentView ==
-                CameraController.CameraView.Back)
-            {
-                watchTimer += Time.deltaTime;
-
-                Debug.Log(
-                    $"👀 Vigilando Pickpocket: {watchTimer:F1}/{watchDuration:F1}"
-                );
-
-                // Lo miró durante 5 segundos
-                if (watchTimer >= watchDuration)
-                {
-                    Debug.Log("✓ Pickpocket descubierto.");
-
-                    ResetPickpocket();
-
-                    cameraController.LookFront();
-
-                    yield break;
-                }
-            }
-            else
-            {
-                // Dejó de mirarlo
-                watchTimer = 0f;
-            }
-
-            // Pasó demasiado tiempo sin detenerlo
-            if (dangerTimer >= timeBetweenMoves)
-            {
-                Debug.Log("💸 ROBO 100K");
-
-                ResetPickpocket();
-
-                cameraController.LookFront();
-
-                yield break;
-            }
-
-            yield return null;
-        }
-    }
-
-    private void PlayMovementSound()
-    {
-        if (movementAudio != null)
-        {
-            movementAudio.Play();
-        }
-    }
-
-    private void ResetPickpocket()
+    private void FinishPickpocket()
     {
         currentPosition = 1;
-
         MovePickpocket(position1);
 
-        eventActive = false;
+        if (cameraController != null)
+            cameraController.LookFront();
 
-        Debug.Log("↩ Pickpocket regresó a posición 1.");
+        EndEvent();
+    }
+
+    public override void CancelEvent()
+    {
+        StopAllCoroutines();
+        currentPosition = 1;
+        MovePickpocket(position1);
+        base.CancelEvent();
     }
 }
