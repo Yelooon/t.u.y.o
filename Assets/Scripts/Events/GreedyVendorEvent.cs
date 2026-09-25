@@ -8,15 +8,19 @@ public class GreedyVendorEvent : BusEventBase
     [SerializeField] private Transform vendor;
     [SerializeField] private Transform vendorStartPosition;
     [SerializeField] private Transform vendorInteractionPosition;
-    [SerializeField] private Transform playerTransform; // Referencia al Transform del jugador
+    [SerializeField] private Transform playerTransform;
     [SerializeField] private Animator animator;
 
     [Header("Timing")]
     [Tooltip("Tiempo entre el silbido y que empiece a caminar hacia ti.")]
     [SerializeField] private float warningTime = 2f;
     [SerializeField] private float approachTime = 3f;
-    [SerializeField] private float rotationDuration = 0.5f; // Tiempo que tarda en rotar hacia el jugador
+    [SerializeField] private float rotationDuration = 0.5f;
     [SerializeField] private float leaveTime = 2f;
+
+    [Header("Rotation Fix")]
+    [Tooltip("Ajusta si el modelo mira hacia atrás (180 para girarlo de frente, 90 o -90 si mira de lado).")]
+    [SerializeField] private float yRotationOffset = 180f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource warningAudio;
@@ -31,7 +35,6 @@ public class GreedyVendorEvent : BusEventBase
         if (animator == null && vendor != null)
             animator = vendor.GetComponentInChildren<Animator>();
 
-        // Intenta encontrar la cámara principal como fallback del jugador si no está asignada
         if (playerTransform == null && Camera.main != null)
             playerTransform = Camera.main.transform;
     }
@@ -67,13 +70,16 @@ public class GreedyVendorEvent : BusEventBase
 
         yield return new WaitForSeconds(warningTime);
 
-        // Caminar hacia la posición de interacción
+        // 1. Girar en Idle hacia el punto de interacción
+        yield return StartCoroutine(RotateTowardsPosition(vendorInteractionPosition.position, rotationDuration));
+
+        // 2. Una vez mirando hacia el waypoint, empieza a caminar en línea recta
         SetCaminarAnimation();
         yield return StartCoroutine(MoveTo(vendorInteractionPosition, approachTime));
 
-        // Pasar a Idle y rotar hacia el jugador
+        // 3. Al llegar al destino, se detiene (Idle) y gira a mirar al jugador
         SetIdleAnimation();
-        yield return StartCoroutine(RotateTowards(playerTransform, rotationDuration));
+        yield return StartCoroutine(RotateTowardsPosition(playerTransform.position, rotationDuration));
 
         Alert("¡El vendedor te llenó las manos de dulces!", AlertLevel.Warning);
 
@@ -119,10 +125,19 @@ public class GreedyVendorEvent : BusEventBase
 
     private IEnumerator LeaveSequence()
     {
+        // 1. Girar en Idle hacia la posición inicial
+        SetIdleAnimation();
+        yield return StartCoroutine(RotateTowardsPosition(vendorStartPosition.position, rotationDuration));
+
+        // 2. Caminar en línea recta de regreso
         SetCaminarAnimation();
         yield return StartCoroutine(MoveTo(vendorStartPosition, leaveTime));
 
+        // 3. Al llegar al punto inicial, se detiene y gira a la rotación de reposo original
         SetIdleAnimation();
+        Quaternion originalTargetRotation = vendorStartPosition.rotation * Quaternion.Euler(0f, yRotationOffset, 0f);
+        yield return StartCoroutine(RotateToRotation(originalTargetRotation, rotationDuration));
+
         EndEvent();
     }
 
@@ -132,7 +147,6 @@ public class GreedyVendorEvent : BusEventBase
             yield break;
 
         Vector3 fromPos = vendor.position;
-        Quaternion fromRot = vendor.rotation;
 
         float timer = 0f;
         while (timer < duration)
@@ -140,29 +154,37 @@ public class GreedyVendorEvent : BusEventBase
             timer += Time.deltaTime;
             float progress = timer / duration;
 
-            vendor.SetPositionAndRotation(
-                Vector3.Lerp(fromPos, target.position, progress),
-                Quaternion.Slerp(fromRot, target.rotation, progress));
+            // Desplaza la posición sin alterar la rotación lograda previamente
+            vendor.position = Vector3.Lerp(fromPos, target.position, progress);
 
             yield return null;
         }
 
-        vendor.SetPositionAndRotation(target.position, target.rotation);
+        vendor.position = target.position;
     }
 
-    private IEnumerator RotateTowards(Transform target, float duration)
+    private IEnumerator RotateTowardsPosition(Vector3 targetPosition, float duration)
     {
-        if (vendor == null || target == null)
+        if (vendor == null)
             yield break;
 
-        Vector3 direction = target.position - vendor.position;
-        direction.y = 0f; // Mantiene la rotación en el plano horizontal (eje Y)
+        Vector3 direction = targetPosition - vendor.position;
+        direction.y = 0f; // Mantener plano horizontal
 
         if (direction == Vector3.zero)
             yield break;
 
+        // Calcula la mirada al punto objetivo sumando el offset fix de la malla (-Z a +Z)
+        Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(0f, yRotationOffset, 0f);
+        yield return StartCoroutine(RotateToRotation(targetRotation, duration));
+    }
+
+    private IEnumerator RotateToRotation(Quaternion targetRotation, float duration)
+    {
+        if (vendor == null)
+            yield break;
+
         Quaternion startRotation = vendor.rotation;
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
 
         float timer = 0f;
         while (timer < duration)
@@ -182,7 +204,8 @@ public class GreedyVendorEvent : BusEventBase
         if (vendor == null || target == null)
             return;
 
-        vendor.SetPositionAndRotation(target.position, target.rotation);
+        vendor.position = target.position;
+        vendor.rotation = target.rotation * Quaternion.Euler(0f, yRotationOffset, 0f);
     }
 
     private void SetIdleAnimation()
