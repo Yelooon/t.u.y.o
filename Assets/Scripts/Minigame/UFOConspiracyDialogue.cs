@@ -21,6 +21,11 @@ public class UFOConspiracyDialogue : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(true);
 
+        foreach (UFOImageOption option in options)
+        {
+            option.Show();
+        }
+
         GenerateOptions();
     }
 
