@@ -78,7 +78,7 @@ public class CandyQTE : MonoBehaviour
 
         UpdateKeyUI();
 
-        Debug.Log("🍬 QTE iniciado.");
+        Debug.Log("QTE iniciado.");
     }
 
     private void GenerateSequence()
@@ -101,7 +101,7 @@ public class CandyQTE : MonoBehaviour
 
         if (Keyboard.current[requiredKey].wasPressedThisFrame)
         {
-            Debug.Log("✓ Tecla correcta: " + requiredKey);
+            Debug.Log("Tecla correcta: " + requiredKey);
 
             currentIndex++;
 
@@ -155,7 +155,7 @@ public class CandyQTE : MonoBehaviour
         if (qtePanel != null)
             qtePanel.SetActive(false);
 
-        Debug.Log("✓ QTE completado.");
+        Debug.Log("QTE completado.");
 
         onCompleted?.Invoke();
 
@@ -169,11 +169,30 @@ public class CandyQTE : MonoBehaviour
         if (qtePanel != null)
             qtePanel.SetActive(false);
 
-        Debug.Log("✗ QTE fallado.");
+        Debug.Log("QTE fallado.");
 
         onFailed?.Invoke();
 
         ClearCallbacks();
+    }
+
+    /// <summary>
+    /// Cierra el minijuego sin éxito ni fallo (ej: se acabó el viaje).
+    /// No llama a ningún callback.
+    /// </summary>
+    public void CancelQTE()
+    {
+        if (!qteActive)
+            return;
+
+        qteActive = false;
+
+        if (qtePanel != null)
+            qtePanel.SetActive(false);
+
+        ClearCallbacks();
+
+        Debug.Log("QTE cancelado.");
     }
 
     private void ClearCallbacks()

@@ -34,6 +34,12 @@ public class UFOConspiracyDialogue : MonoBehaviour
 
         foreach (UFOImageData image in imagePool)
         {
+            // Ignorar huecos vacíos y repetidos en la lista
+            if (image == null ||
+                alienImages.Contains(image) ||
+                nonAlienImages.Contains(image))
+                continue;
+
             if (image.isAlien)
                 alienImages.Add(image);
             else
@@ -105,13 +111,13 @@ public class UFOConspiracyDialogue : MonoBehaviour
 
         if (option.IsAlien())
         {
-            Debug.Log("👽✓ ¡Encontraste la imagen relacionada con aliens!");
+            Debug.Log("¡Encontraste la imagen relacionada con aliens!");
 
             currentEvent.CorrectAnswer();
         }
         else
         {
-            Debug.Log("❌ ¡Eso no tiene nada que ver con aliens!");
+            Debug.Log("¡Eso no tiene nada que ver con aliens!");
 
             // Podemos generar otra combinación
             GenerateOptions();
