@@ -1,12 +1,14 @@
 using System.Collections;
 using UnityEngine;
 
-public class MotorcycleRobberyEvent : MonoBehaviour
+public class MotorcycleRobberyEvent : BusEventBase
 {
     [Header("References")]
     [SerializeField] private WindowInteractable window;
 
     [Header("Event Timing")]
+    [Tooltip("Tiempo desde que suena la moto hasta que aparece el extraño.")]
+    [SerializeField] private float approachTime = 1f;
     [SerializeField] private float reactionTime = 3f;
 
     [Header("Visual")]
@@ -14,21 +16,21 @@ public class MotorcycleRobberyEvent : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] private AudioSource motorcycleAudio;
+    [Tooltip("Muestra subtítulos de los sonidos (accesibilidad). Desactívalo si quieres que sea solo por audio.")]
+    [SerializeField] private bool showSoundCaptions = true;
 
-    private bool eventActive = false;
+    // Solo puede ocurrir con la ventana abierta
+    public override bool CanTrigger =>
+        base.CanTrigger && window != null && window.IsOpen;
 
-    public bool EventActive => eventActive;
+    // Se mantiene para los botones de debug
+    public void TriggerRobbery() => Trigger();
 
-    public void TriggerRobbery()
+    public override void Trigger()
     {
-        if (eventActive)
-            return;
-
-        // El evento solamente puede comenzar
-        // si la ventana está abierta.
-        if (window == null || !window.IsOpen)
+        if (!CanTrigger)
         {
-            Debug.Log("Raponazo cancelado: la ventana está cerrada.");
+            Debug.Log("Raponazo cancelado: la ventana está cerrada o ya hay uno activo.");
             return;
         }
 
@@ -37,88 +39,68 @@ public class MotorcycleRobberyEvent : MonoBehaviour
 
     private IEnumerator RobberySequence()
     {
-        eventActive = true;
+        BeginEvent();
 
-        Debug.Log("🏍️ Se escucha una moto...");
+        if (motorcycleAudio != null)
+            motorcycleAudio.Play();
 
-        PlayMotorcycleSound();
+        if (showSoundCaptions)
+            Alert("[Se escucha una moto acercándose]", AlertLevel.Info);
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(approachTime);
 
-        // Comprobar nuevamente porque el jugador
-        // pudo haber cerrado la ventana mientras tanto.
+        // El jugador pudo cerrar la ventana mientras tanto
         if (!window.IsOpen)
         {
-            EndRobbery();
+            FinishRobbery();
             yield break;
         }
 
         ShowStranger();
-
-        Debug.Log("👤 ¡Un extraño apareció en la ventana!");
-        Debug.Log("⚠️ ¡CIERRA LA VENTANA!");
+        Alert("¡CIERRA LA VENTANA!", AlertLevel.Danger);
 
         float timer = 0f;
-
         while (timer < reactionTime)
         {
-            // El jugador cerró la ventana
             if (!window.IsOpen)
             {
-                Debug.Log("✓ El jugador cerró la ventana a tiempo.");
-                EndRobbery();
+                Alert("¡Cerraste la ventana a tiempo!", AlertLevel.Success);
+                FinishRobbery();
                 yield break;
             }
 
             timer += Time.deltaTime;
-
+            ShowProgress("¡Cierra la ventana!", 1f - timer / reactionTime);
             yield return null;
         }
 
-        // Si llegamos aquí, nunca cerró la ventana
-        Debug.Log("💸 ¡RAPONAZO!");
+        Alert("¡RAPONAZO!", AlertLevel.Danger);
+        StealBill("Raponazo en moto");
 
-        StealMoney();
-
-        EndRobbery();
-    }
-
-    private void PlayMotorcycleSound()
-    {
-        if (motorcycleAudio != null)
-        {
-            motorcycleAudio.Play();
-        }
+        FinishRobbery();
     }
 
     private void ShowStranger()
     {
         if (strangerFace != null)
-        {
             strangerFace.SetActive(true);
-        }
     }
 
     private void HideStranger()
     {
         if (strangerFace != null)
-        {
             strangerFace.SetActive(false);
-        }
     }
 
-    private void StealMoney()
-    {
-        Debug.Log("💸 El jugador perdió dinero.");
-        
-        // Aquí conectaremos posteriormente
-        // el sistema real de dinero.
-    }
-
-    private void EndRobbery()
+    private void FinishRobbery()
     {
         HideStranger();
+        EndEvent();
+    }
 
-        eventActive = false;
+    public override void CancelEvent()
+    {
+        HideStranger();
+        base.CancelEvent();
     }
 }

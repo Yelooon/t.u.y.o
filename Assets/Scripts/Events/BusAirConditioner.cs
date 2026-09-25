@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class BusAirConditioner : MonoBehaviour
@@ -19,8 +20,10 @@ public class BusAirConditioner : MonoBehaviour
     [SerializeField] private Material airOffMaterial;
 
     public ACState CurrentState => currentState;
-
     public bool IsWorking => currentState == ACState.Working;
+
+    /// <summary>El HUD escucha esto para avisar "se fue / volvió la energía".</summary>
+    public event Action<ACState> StateChanged;
 
     private void Start()
     {
@@ -33,10 +36,10 @@ public class BusAirConditioner : MonoBehaviour
             return;
 
         currentState = ACState.Failed;
-
-        Debug.Log("❌ Aire acondicionado APAGADO.");
+        Debug.Log("Aire acondicionado APAGADO.");
 
         UpdateVentMaterial();
+        StateChanged?.Invoke(currentState);
     }
 
     public void RestoreAC()
@@ -45,10 +48,10 @@ public class BusAirConditioner : MonoBehaviour
             return;
 
         currentState = ACState.Working;
-
-        Debug.Log("❄ Aire acondicionado ENCENDIDO.");
+        Debug.Log("Aire acondicionado ENCENDIDO.");
 
         UpdateVentMaterial();
+        StateChanged?.Invoke(currentState);
     }
 
     public void ToggleAC()
@@ -64,13 +67,6 @@ public class BusAirConditioner : MonoBehaviour
         if (airVentRenderer == null)
             return;
 
-        if (IsWorking)
-        {
-            airVentRenderer.material = airOnMaterial;
-        }
-        else
-        {
-            airVentRenderer.material = airOffMaterial;
-        }
+        airVentRenderer.material = IsWorking ? airOnMaterial : airOffMaterial;
     }
 }
