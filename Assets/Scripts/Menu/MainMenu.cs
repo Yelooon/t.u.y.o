@@ -3,16 +3,20 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Menú principal: botón Jugar y botón Salir, con fundido a negro opcional.
+/// Gestor principal del menú: escena, transiciones y paneles (Tutorial/Salir/Jugar).
 /// </summary>
 public class MainMenu : MonoBehaviour
 {
     [Header("Escena del juego")]
-    [Tooltip("Nombre EXACTO de la escena del bus (como aparece en Build Settings).")]
+    [Tooltip("Nombre EXACTO de la escena del juego en Build Settings.")]
     [SerializeField] private string gameSceneName = "BusScene";
 
+    [Header("Interfaz UI")]
+    [Tooltip("Panel del tutorial que se activará/desactivará.")]
+    [SerializeField] private GameObject tutorialPanel;
+
     [Header("Fundido (opcional)")]
-    [Tooltip("Un Image negro a pantalla completa con CanvasGroup. Si está vacío, cambia de escena de una.")]
+    [Tooltip("Image negro con CanvasGroup.")]
     [SerializeField] private CanvasGroup fadePanel;
     [SerializeField] private float fadeDuration = 0.6f;
 
@@ -23,27 +27,44 @@ public class MainMenu : MonoBehaviour
 
     private void Start()
     {
-        // Por si venimos de un juego pausado o con el cursor bloqueado
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
 
         if (fadePanel != null)
             StartCoroutine(Fade(1f, 0f));
     }
 
-    // Conectar al OnClick del botón Jugar
+    // Botón / Objeto: Jugar
     public void Play()
     {
-        if (isLoading)
-            return;
+        if (isLoading) return;
 
         isLoading = true;
         PlayClick();
         StartCoroutine(LoadGame());
     }
 
-    // Conectar al OnClick del botón Salir
+    // Botón / Objeto: Abrir Tutorial
+    public void OpenTutorial()
+    {
+        PlayClick();
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(true);
+    }
+
+    // Botón: Cerrar Tutorial
+    public void CloseTutorial()
+    {
+        PlayClick();
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
+    }
+
+    // Botón / Objeto: Salir
     public void Quit()
     {
         PlayClick();
@@ -77,12 +98,10 @@ public class MainMenu : MonoBehaviour
         }
 
         fadePanel.alpha = to;
-
-        // Si quedó transparente, que no bloquee los clics a los botones
         fadePanel.blocksRaycasts = to > 0f;
     }
 
-    private void PlayClick()
+    public void PlayClick()
     {
         if (clickSound != null)
             clickSound.Play();
