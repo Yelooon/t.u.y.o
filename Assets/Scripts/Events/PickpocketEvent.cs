@@ -5,6 +5,7 @@ public class PickpocketEvent : BusEventBase
 {
     [Header("Pickpocket")]
     [SerializeField] private Transform pickpocket;
+    [SerializeField] private Animator animator;
 
     [Header("Positions")]
     [SerializeField] private Transform position1;
@@ -26,11 +27,21 @@ public class PickpocketEvent : BusEventBase
     [Header("Camera")]
     [SerializeField] private CameraController cameraController;
 
+    [Header("Animator Parameters")]
+    [SerializeField] private string lugarParamName = "Lugar";
+
     private int currentPosition = 1;
+
+    private void Awake()
+    {
+        // Si no se asigna manualmente en el inspector, intenta obtenerlo del objeto carterista
+        if (animator == null && pickpocket != null)
+            animator = pickpocket.GetComponentInChildren<Animator>();
+    }
 
     private void Start()
     {
-        MovePickpocket(position1);
+        MoveToPosition(1);
     }
 
     // Se mantiene para los botones de debug
@@ -116,6 +127,12 @@ public class PickpocketEvent : BusEventBase
             case 3: MovePickpocket(position3); break;
         }
 
+        // Actualiza el parámetro tipo int del Animator
+        if (animator != null)
+        {
+            animator.SetInteger(lugarParamName, currentPosition);
+        }
+
         if (movementAudio != null)
             movementAudio.Play();
 
@@ -132,8 +149,7 @@ public class PickpocketEvent : BusEventBase
 
     private void FinishPickpocket()
     {
-        currentPosition = 1;
-        MovePickpocket(position1);
+        MoveToPosition(1);
 
         if (cameraController != null)
             cameraController.LookFront();
@@ -144,8 +160,7 @@ public class PickpocketEvent : BusEventBase
     public override void CancelEvent()
     {
         StopAllCoroutines();
-        currentPosition = 1;
-        MovePickpocket(position1);
+        MoveToPosition(1);
         base.CancelEvent();
     }
 }

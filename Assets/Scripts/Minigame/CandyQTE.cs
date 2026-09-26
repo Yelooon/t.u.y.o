@@ -32,6 +32,7 @@ public class CandyQTE : MonoBehaviour
 
     private Action onCompleted;
     private Action onFailed;
+    private Action onStepSuccess; // Callback para aciertos individuales
 
     public bool IsActive => qteActive;
 
@@ -53,13 +54,14 @@ public class CandyQTE : MonoBehaviour
         CheckInput();
     }
 
-    public void StartQTE(Action completedCallback, Action failedCallback)
+    public void StartQTE(Action completedCallback, Action failedCallback, Action stepSuccessCallback = null)
     {
         if (qteActive)
             return;
 
         onCompleted = completedCallback;
         onFailed = failedCallback;
+        onStepSuccess = stepSuccessCallback;
 
         GenerateSequence();
 
@@ -103,6 +105,9 @@ public class CandyQTE : MonoBehaviour
         {
             Debug.Log("Tecla correcta: " + requiredKey);
 
+            // 1. Notifica al evento que se acertó una tecla
+            onStepSuccess?.Invoke();
+
             currentIndex++;
 
             if (currentIndex >= currentSequence.Length)
@@ -135,16 +140,11 @@ public class CandyQTE : MonoBehaviour
     {
         switch (key)
         {
-            case Key.W:
-                return "W";
-            case Key.A:
-                return "A";
-            case Key.S:
-                return "S";
-            case Key.D:
-                return "D";
-            default:
-                return key.ToString();
+            case Key.W: return "W";
+            case Key.A: return "A";
+            case Key.S: return "S";
+            case Key.D: return "D";
+            default: return key.ToString();
         }
     }
 
@@ -176,10 +176,6 @@ public class CandyQTE : MonoBehaviour
         ClearCallbacks();
     }
 
-    /// <summary>
-    /// Cierra el minijuego sin éxito ni fallo (ej: se acabó el viaje).
-    /// No llama a ningún callback.
-    /// </summary>
     public void CancelQTE()
     {
         if (!qteActive)
@@ -199,5 +195,6 @@ public class CandyQTE : MonoBehaviour
     {
         onCompleted = null;
         onFailed = null;
+        onStepSuccess = null;
     }
 }
