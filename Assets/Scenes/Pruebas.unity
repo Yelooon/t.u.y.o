@@ -8162,7 +8162,7 @@ MonoBehaviour:
     maxInterval: 50
     retryDelay: 2
   - busEvent: {fileID: 1062664052}
-    enabled: 1
+    enabled: 0
     firstDelay: 1
     minInterval: 35
     maxInterval: 60
@@ -8174,7 +8174,7 @@ MonoBehaviour:
     maxInterval: 45
     retryDelay: 2
   - busEvent: {fileID: 510243354}
-    enabled: 0
+    enabled: 1
     firstDelay: 5
     minInterval: 40
     maxInterval: 70
@@ -9382,7 +9382,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -1677281785864228965, guid: b95608d30b55b3e4fb013a1f8c1a525e, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1478446407244690710, guid: b95608d30b55b3e4fb013a1f8c1a525e, type: 3}
       propertyPath: m_StaticEditorFlags
