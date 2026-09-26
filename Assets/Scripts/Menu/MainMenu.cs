@@ -78,7 +78,9 @@ public class MainMenu : MonoBehaviour
 
     private IEnumerator LoadGame()
     {
+
         if (fadePanel != null)
+            yield return new WaitForSeconds(2f);
             yield return Fade(0f, 1f);
 
         SceneManager.LoadScene(gameSceneName);

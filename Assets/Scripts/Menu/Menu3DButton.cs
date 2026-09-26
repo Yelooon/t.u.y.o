@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// Detecta cuando el mouse pasa sobre un objeto 3D del menú.
-/// Controla: movimiento de luces, intensidad de luces, activación/fade de Texto 3D y clics.
+/// Controla: movimiento de luces, intensidad de luces, activación/fade de Texto 3D, animación de clic y eventos.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
@@ -33,7 +33,13 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [Tooltip("Si usas el componente TextMesh clásico, desvanece suavemente el alfa en vez de apagarlo de golpe.")]
     [SerializeField] private bool fadeTextAlpha = true;
 
-    [Header("Animación")]
+    [Header("Animación de Clic (Opcional)")]
+    [Tooltip("Animator a activar al hacer clic. Si se deja vacío, buscará uno en este mismo GameObject.")]
+    [SerializeField] private Animator targetAnimator;
+    [Tooltip("Nombre del parametro Trigger en el Animator.")]
+    [SerializeField] private string clickTriggerName = "Play";
+
+    [Header("Animación General")]
     [Tooltip("Velocidad de interpolación de movimiento, luz y transparencia.")]
     [SerializeField] private float lerpSpeed = 5f;
 
@@ -51,6 +57,12 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private void Start()
     {
         currentTargetIntensity = enableIntensityChange ? normalIntensity : 0f;
+
+        // Si no asignaste manualmente un Animator, intenta buscar uno en este objeto
+        if (targetAnimator == null)
+        {
+            targetAnimator = GetComponent<Animator>();
+        }
 
         // Configuración inicial de luces
         foreach (Light light in targetLights)
@@ -185,6 +197,13 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // Activa el Trigger de animación si el objeto tiene un Animator
+        if (targetAnimator != null)
+        {
+            targetAnimator.SetTrigger(clickTriggerName);
+        }
+
+        // Ejecuta la acción asignada en el evento UnityEvent
         onClickAction?.Invoke();
     }
 
