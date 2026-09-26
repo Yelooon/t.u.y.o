@@ -1838,7 +1838,16 @@ AnimationClip:
       m_RotationOrder: 4
     path: Esqueleto/Hueso.003.L/Hueso.004.L/Hueso.005.L/Hueso.006.L
   m_FloatCurves: []
-  m_PPtrCurves: []
+  m_PPtrCurves:
+  - serializedVersion: 2
+    curve:
+    - time: 0
+      value: {fileID: 2100000, guid: d9e2732c577d3774aaf2a46aaa48e781, type: 2}
+    attribute: 'm_Materials.Array.data[1]'
+    path: cabeza
+    classID: 137
+    script: {fileID: 0}
+    flags: 2
   m_SampleRate: 24
   m_WrapMode: 0
   m_Bounds:
@@ -1856,6 +1865,15 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     - serializedVersion: 2
+      path: 2879812699
+      attribute: 1
+      script: {fileID: 0}
+      typeID: 137
+      customType: 21
+      isPPtrCurve: 1
+      isIntCurve: 0
+      isSerializeReferenceCurve: 0
+    - serializedVersion: 2
       path: 3108239886
       attribute: 1
       script: {fileID: 0}
@@ -2440,7 +2458,8 @@ AnimationClip:
       isPPtrCurve: 0
       isIntCurve: 0
       isSerializeReferenceCurve: 0
-    pptrCurveMapping: []
+    pptrCurveMapping:
+    - {fileID: 2100000, guid: d9e2732c577d3774aaf2a46aaa48e781, type: 2}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}

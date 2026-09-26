@@ -6,6 +6,7 @@ public class GreedyVendorEvent : BusEventBase
 {
     [Header("References")]
     [SerializeField] private CandyQTE candyQTE;
+    [SerializeField] private CameraController cameraController;   // Referencia a tu script CameraController
     [SerializeField] private Transform vendor;
     [SerializeField] private Transform vendorStartPosition;
     [SerializeField] private Transform vendorInteractionPosition;
@@ -21,14 +22,6 @@ public class GreedyVendorEvent : BusEventBase
 
     [Header("Candy Drop Settings (On Fail)")]
     [SerializeField] private float dropDistance = 0.25f;           // Desplazamiento hacia abajo al quedar retenidos
-
-    [Header("Camera Lock Settings")]
-    [SerializeField] private bool lockCameraOnArrival = true;
-    [SerializeField] private Transform cameraTransform;           // Transform de la Cámara (si es null se asigna Camera.main)
-    [Tooltip("Script de control de ratón/mirada del jugador para desactivarlo mientras está bloqueada.")]
-    [SerializeField] private MonoBehaviour cameraLookScript;
-    [SerializeField] private Vector3 leftRotationEuler = new Vector3(0f, -90f, 0f); // Ángulo para mirar a la izquierda
-    [SerializeField] private float cameraRotateDuration = 0.5f;   // Tiempo en rotar hacia la izquierda
 
     [Header("Timing")]
     [Tooltip("Tiempo entre el silbido y que empiece a caminar hacia ti.")]
@@ -50,7 +43,6 @@ public class GreedyVendorEvent : BusEventBase
     [SerializeField] private string caminarTrigger = "Caminar";
 
     private int activeCandiesInFace = 0;
-    private bool isCameraLocked = false;
 
     private void Awake()
     {
@@ -60,8 +52,8 @@ public class GreedyVendorEvent : BusEventBase
         if (playerTransform == null && Camera.main != null)
             playerTransform = Camera.main.transform;
 
-        if (cameraTransform == null && Camera.main != null)
-            cameraTransform = Camera.main.transform;
+        if (cameraController == null)
+            cameraController = FindObjectOfType<CameraController>();
     }
 
     private void Start()
@@ -100,14 +92,15 @@ public class GreedyVendorEvent : BusEventBase
         // 1. Girar hacia la posición de interacción
         yield return StartCoroutine(RotateTowardsPosition(vendorInteractionPosition.position, rotationDuration));
 
-        // 2. Caminar hacia el jugador (Posición 2)
+        // 2. Caminar hacia la Posición 2 (Interacción)
         SetCaminarAnimation();
         yield return StartCoroutine(MoveTo(vendorInteractionPosition, approachTime));
 
-        // 3. Al llegar a Posición 2: Detenerse, mirar al jugador y BLOQUEAR CÁMARA A LA IZQUIERDA
+        // 3. Al llegar a la Posición 2: Detenerse, mirar al jugador y CAMBIAR CÁMARA A LEFT + BLOQUEAR
         SetIdleAnimation();
         yield return StartCoroutine(RotateTowardsPosition(playerTransform.position, rotationDuration));
-        yield return StartCoroutine(LockCameraToLeft());
+
+        LockCameraToLeftView();
 
         Alert("¡El vendedor te llenó las manos de dulces!", AlertLevel.Warning);
 
@@ -202,8 +195,8 @@ public class GreedyVendorEvent : BusEventBase
 
     private IEnumerator FailedLeaveSequence()
     {
-        // Desbloqueamos la cámara cuando empieza a retirarse tras fallar
-        UnlockCamera();
+        // Desbloqueamos la cámara para que el jugador vuelva a mover la vista si lo desea
+        UnlockPlayerCamera();
 
         // 1. Desplazar ligeramente hacia abajo los dulces retenidos
         if (activeCandiesInFace > 0)
@@ -245,8 +238,8 @@ public class GreedyVendorEvent : BusEventBase
 
     private IEnumerator LeaveSequence()
     {
-        // Desbloquear cámara al terminar con éxito
-        UnlockCamera();
+        // Desbloquear la cámara al terminar exitosamente el evento
+        UnlockPlayerCamera();
 
         SetIdleAnimation();
         yield return StartCoroutine(RotateTowardsPosition(vendorStartPosition.position, rotationDuration));
@@ -261,45 +254,21 @@ public class GreedyVendorEvent : BusEventBase
         EndEvent();
     }
 
-    #region Camera Lock Logic
+    #region Camera Locking Logic
 
-    private IEnumerator LockCameraToLeft()
+    private void LockCameraToLeftView()
     {
-        if (!lockCameraOnArrival) yield break;
+        if (cameraController == null) return;
 
-        if (cameraTransform == null && Camera.main != null)
-            cameraTransform = Camera.main.transform;
-
-        if (cameraTransform == null) yield break;
-
-        isCameraLocked = true;
-
-        if (cameraLookScript != null)
-            cameraLookScript.enabled = false;
-
-        Quaternion startRot = cameraTransform.localRotation;
-        Quaternion targetRot = Quaternion.Euler(leftRotationEuler);
-
-        float timer = 0f;
-        while (timer < cameraRotateDuration)
-        {
-            timer += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, timer / cameraRotateDuration);
-            cameraTransform.localRotation = Quaternion.Slerp(startRot, targetRot, t);
-            yield return null;
-        }
-
-        cameraTransform.localRotation = targetRot;
+        cameraController.SetView(CameraController.CameraView.Left);
+        cameraController.SetLock(true);
     }
 
-    private void UnlockCamera()
+    private void UnlockPlayerCamera()
     {
-        if (!isCameraLocked) return;
+        if (cameraController == null) return;
 
-        isCameraLocked = false;
-
-        if (cameraLookScript != null)
-            cameraLookScript.enabled = true;
+        cameraController.SetLock(false);
     }
 
     #endregion
@@ -499,7 +468,7 @@ public class GreedyVendorEvent : BusEventBase
     {
         StopAllCoroutines();
 
-        UnlockCamera();
+        UnlockPlayerCamera();
 
         if (candyQTE != null)
             candyQTE.CancelQTE();
