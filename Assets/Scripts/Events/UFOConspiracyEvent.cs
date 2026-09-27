@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class UFOConspiracyEvent : BusEventBase
 {
@@ -22,6 +23,10 @@ public class UFOConspiracyEvent : BusEventBase
     [SerializeField] private string molestarTrigger = "Molestar";
     [SerializeField] private string asentirTrigger = "Asentir";
     [SerializeField] private string negarTrigger = "Negar";
+    private UnityEvent empezarHablar;
+    public UnityEvent respuestaCorrecta;
+    public UnityEvent respuestaIncorrecta;
+    public UnityEvent terminarHablar;
 
     public override bool IsMoneyThreat => false;
     public bool EventActive => IsActive;
@@ -49,6 +54,7 @@ public class UFOConspiracyEvent : BusEventBase
 
     private IEnumerator ConspiracySequence()
     {
+        empezarHablar?.Invoke();
         BeginEvent();
 
         // Bloquea la cámara mirando al frente
@@ -88,6 +94,7 @@ public class UFOConspiracyEvent : BusEventBase
     /// <summary>Llamada por UFOConspiracyDialogue cuando se acierta la imagen.</summary>
     public void CorrectAnswer()
     {
+        respuestaCorrecta?.Invoke();
         if (!IsActive || !isTalking)
             return;
 
@@ -105,6 +112,7 @@ public class UFOConspiracyEvent : BusEventBase
     /// <summary>Llamada por UFOConspiracyDialogue cuando se falla la imagen.</summary>
     public void WrongAnswer()
     {
+        respuestaIncorrecta?.Invoke();
         if (!IsActive || !isTalking)
             return;
 
@@ -116,6 +124,7 @@ public class UFOConspiracyEvent : BusEventBase
 
     private void StopTalking()
     {
+        terminarHablar?.Invoke();
         isTalking = false;
         HideProgress();
 
