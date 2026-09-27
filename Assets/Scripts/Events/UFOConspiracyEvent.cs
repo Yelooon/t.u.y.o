@@ -14,6 +14,10 @@ public class UFOConspiracyEvent : BusEventBase
     [Header("Dialogue")]
     [SerializeField] private UFOConspiracyDialogue dialogue;
 
+    [Header("Timing")]
+    [Tooltip("Tiempo de espera en segundos tras la animación antes de mostrar la UI de diálogo.")]
+    [SerializeField] private float dialogueDelay = 1.0f;
+
     [Header("Animator Parameters")]
     [SerializeField] private string molestarTrigger = "Molestar";
     [SerializeField] private string asentirTrigger = "Asentir";
@@ -57,6 +61,7 @@ public class UFOConspiracyEvent : BusEventBase
         if (showSoundCaptions)
             Alert("[Alguien viene hablando de ovnis...]", AlertLevel.Info);
 
+        // 1. Activa la animación de molestar
         if (animator != null)
             animator.SetTrigger(molestarTrigger);
 
@@ -65,12 +70,15 @@ public class UFOConspiracyEvent : BusEventBase
         if (conspiracyAudio != null)
             conspiracyAudio.Play();
 
+        // 2. Espera de 1 segundo antes de desplegar el minijuego de diálogo
+        yield return new WaitForSeconds(dialogueDelay);
+
         if (dialogue != null)
             dialogue.StartDialogue(this);
 
         Alert("¡Encuentra la imagen de los aliens para callarlo!", AlertLevel.Warning);
 
-        // Bucle infinito: Mantiene el evento activo sin límite de tiempo
+        // Mantiene el evento activo mientras el jugador no acierte
         while (isTalking)
         {
             yield return null;
@@ -111,7 +119,6 @@ public class UFOConspiracyEvent : BusEventBase
         isTalking = false;
         HideProgress();
 
-        // Desbloquea la cámara al terminar
         if (cameraController != null)
         {
             cameraController.SetLock(false);
