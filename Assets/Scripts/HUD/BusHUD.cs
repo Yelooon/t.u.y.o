@@ -158,7 +158,7 @@ public class BusHUD : MonoBehaviour
             tripSlider.value = eventManager.TripProgress;
 
         if (tripText != null)
-            tripText.text = $"Viaje {Mathf.RoundToInt(eventManager.TripProgress * 100f)}%";
+            tripText.text = $"{Mathf.RoundToInt(eventManager.TripProgress * 100f)}%";
     }
 
     private void UpdateTemperature()

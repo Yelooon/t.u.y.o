@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -5,7 +6,7 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// Detecta cuando el mouse pasa sobre un objeto 3D del menú.
-/// Controla: movimiento de luces, intensidad de luces, activación/fade de Texto 3D, animación de clic y eventos.
+/// Controla: movimiento de luces, intensidad de luces, activación/fade de Texto 3D, animación de clic, audios y eventos.
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
@@ -36,8 +37,18 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     [Header("Animación de Clic (Opcional)")]
     [Tooltip("Animator a activar al hacer clic. Si se deja vacío, buscará uno en este mismo GameObject.")]
     [SerializeField] private Animator targetAnimator;
-    [Tooltip("Nombre del parametro Trigger en el Animator.")]
+    [Tooltip("Nombre del parámetro Trigger en el Animator.")]
     [SerializeField] private string clickTriggerName = "Play";
+
+    [Header("Audio (Opcional)")]
+    [Tooltip("AudioSource que sonará cuando el mouse pasa por encima.")]
+    [SerializeField] private AudioSource hoverSound;
+    [Tooltip("AudioSource que sonará al hacer clic.")]
+    [SerializeField] private AudioSource Sonido;
+    [Tooltip("Tiempo en segundos que sonará el audio de clic a volumen normal antes de iniciar el fade out.")]
+    [SerializeField] private float soundPlayDuration = 1.0f;
+    [Tooltip("Duración en segundos del desvanecimiento (fade out) de volumen hasta llegar a 0.")]
+    [SerializeField] private float soundFadeDuration = 0.5f;
 
     [Header("Animación General")]
     [Tooltip("Velocidad de interpolación de movimiento, luz y transparencia.")]
@@ -54,9 +65,18 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private float targetTextAlpha = 0f;
     private float currentTextAlpha = 0f;
 
+    private float originalSoundVolume = 1f;
+    private Coroutine soundFadeCoroutine;
+
     private void Start()
     {
         currentTargetIntensity = enableIntensityChange ? normalIntensity : 0f;
+
+        // Guarda el volumen original configurado en el AudioSource de clic
+        if (Sonido != null)
+        {
+            originalSoundVolume = Sonido.volume;
+        }
 
         // Si no asignaste manualmente un Animator, intenta buscar uno en este objeto
         if (targetAnimator == null)
@@ -135,6 +155,12 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        // Reproduce el sonido al pasar el cursor
+        if (hoverSound != null)
+        {
+            hoverSound.Play();
+        }
+
         // Posición de luces
         if (enableMovement)
         {
@@ -203,8 +229,45 @@ public class Menu3DButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
             targetAnimator.SetTrigger(clickTriggerName);
         }
 
+        // Manejo del audio con Fade Out tras 1 segundo
+        if (Sonido != null)
+        {
+            if (soundFadeCoroutine != null)
+            {
+                StopCoroutine(soundFadeCoroutine);
+            }
+            soundFadeCoroutine = StartCoroutine(PlaySoundWithFadeOut());
+        }
+
         // Ejecuta la acción asignada en el evento UnityEvent
         onClickAction?.Invoke();
+    }
+
+    private IEnumerator PlaySoundWithFadeOut()
+    {
+        // Restablece el volumen inicial y reproduce el audio
+        Sonido.volume = originalSoundVolume;
+        Sonido.Play();
+
+        // Espera 1 segundo a volumen normal
+        yield return new WaitForSeconds(soundPlayDuration);
+
+        // Hace el desvanecimiento progresivo (Fade Out)
+        float startVolume = Sonido.volume;
+        float t = 0f;
+
+        while (t < soundFadeDuration)
+        {
+            t += Time.unscaledDeltaTime;
+            Sonido.volume = Mathf.Lerp(startVolume, 0f, t / soundFadeDuration);
+            yield return null;
+        }
+
+        Sonido.volume = 0f;
+        Sonido.Stop();
+
+        // Restablece el volumen original por si vuelve a hacerse clic más adelante
+        Sonido.volume = originalSoundVolume;
     }
 
     private void SetTextMeshAlpha(float alpha)

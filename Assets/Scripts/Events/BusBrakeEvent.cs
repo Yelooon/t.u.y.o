@@ -36,8 +36,8 @@ public class BusBrakeEvent : BusEventBase
 
     private IEnumerator BrakeSequence()
     {
+        onBrakeHit?.Invoke();
         BeginEvent();
-
         Alert("¡El MIO va a frenar! Mantén CTRL para agarrarte", AlertLevel.Warning);
 
         float timer = 0f;
@@ -49,7 +49,7 @@ public class BusBrakeEvent : BusEventBase
         }
 
         HideProgress();
-        onBrakeHit?.Invoke();
+        
 
         if (handrail != null && handrail.IsHolding)
         {
