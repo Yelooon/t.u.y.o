@@ -23,7 +23,7 @@ public class UFOConspiracyEvent : BusEventBase
     [SerializeField] private string molestarTrigger = "Molestar";
     [SerializeField] private string asentirTrigger = "Asentir";
     [SerializeField] private string negarTrigger = "Negar";
-    private UnityEvent empezarHablar;
+    public UnityEvent empezarHablar;
     public UnityEvent respuestaCorrecta;
     public UnityEvent respuestaIncorrecta;
     public UnityEvent terminarHablar;

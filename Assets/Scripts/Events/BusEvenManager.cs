@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Controla el viaje: dispara los eventos de forma aleatoria,
@@ -56,6 +57,7 @@ public class BusEventManager : MonoBehaviour
     public event Action TripStarted;
     public event Action TripCompleted;
     public event Action GameOver;
+    public UnityEvent victoria;
 
     public bool IsRunning { get; private set; }
     public float TripTime { get; private set; }
@@ -221,6 +223,7 @@ public class BusEventManager : MonoBehaviour
         {
             Debug.Log("Llegaste a tu destino con la plata.");
             TripCompleted?.Invoke();
+            victoria?.Invoke();
         }
         else
         {
