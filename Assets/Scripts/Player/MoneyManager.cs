@@ -34,6 +34,8 @@ public class MoneyManager : MonoBehaviour
         Instance = this;
         Bills = startingBills;
 
+        perder = false;
+
     }
 
     public void LoseBill(string reason)
@@ -53,5 +55,11 @@ public class MoneyManager : MonoBehaviour
             OutOfMoney?.Invoke();
         }
             
+    }
+
+    public void ResetMoney()
+    {
+        Bills = startingBills;
+        perder = false; // si todavía tienen esta variable; si no, borren esta línea
     }
 }
