@@ -32,6 +32,7 @@ public class BusAirConditioner : MonoBehaviour
 
     public void FailAC()
     {
+        /**
         if (currentState == ACState.Failed)
             return;
 
@@ -40,11 +41,12 @@ public class BusAirConditioner : MonoBehaviour
 
         UpdateVentMaterial();
         StateChanged?.Invoke(currentState);
+        **/
     }
 
     public void RestoreAC()
     {
-        if (currentState == ACState.Working)
+        /** if (currentState == ACState.Working)
             return;
 
         currentState = ACState.Working;
@@ -52,6 +54,7 @@ public class BusAirConditioner : MonoBehaviour
 
         UpdateVentMaterial();
         StateChanged?.Invoke(currentState);
+        **/
     }
 
     public void ToggleAC()
