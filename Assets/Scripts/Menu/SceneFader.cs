@@ -109,7 +109,7 @@ public class SceneFader : MonoBehaviour
     }
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-            CambiarEscena(sceneName);
+        //if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            //CambiarEscena(sceneName);
     }
 }
