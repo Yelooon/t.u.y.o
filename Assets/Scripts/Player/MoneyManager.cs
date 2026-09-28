@@ -32,8 +32,25 @@ public class MoneyManager : MonoBehaviour
         }
 
         Instance = this;
-        Bills = startingBills;
+        ResetState(); // Reinicia billetes y bandera de derrota al cargar la escena
+    }
 
+    private void OnDestroy()
+    {
+        // Limpia la instancia estática cuando la escena se descarga
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
+    /// <summary>
+    /// Restablece la salud/dinero y el estado de derrota del jugador.
+    /// </summary>
+    public void ResetState()
+    {
+        Bills = startingBills;
+        perder = false;
     }
 
     public void LoseBill(string reason)
@@ -52,6 +69,5 @@ public class MoneyManager : MonoBehaviour
             perder = true;
             OutOfMoney?.Invoke();
         }
-            
     }
 }
