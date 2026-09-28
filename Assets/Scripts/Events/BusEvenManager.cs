@@ -249,10 +249,6 @@ public class BusEventManager : MonoBehaviour
     private void iniciar()
     {
         Debug.Log("Iniciando viaje...");
-
-        if (MoneyManager.Instance != null)
-            MoneyManager.Instance.ResetMoney();
-
         StartTrip();
     }
 }
