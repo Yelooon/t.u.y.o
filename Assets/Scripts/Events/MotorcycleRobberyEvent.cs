@@ -19,6 +19,7 @@ public class MotorcycleRobberyEvent : BusEventBase
     [SerializeField] private AudioSource motorcycleAudio;
     [Tooltip("Muestra subtítulos de los sonidos (accesibilidad). Desactívalo si quieres que sea solo por audio.")]
     [SerializeField] private bool showSoundCaptions = true;
+    
 
     // Solo puede ocurrir con la ventana abierta
     public override bool CanTrigger =>

@@ -79,7 +79,6 @@ public class BusBrakeEvent : BusEventBase
         }
 
         PlayerIsStunned = false;
-        onPlayerRecovered?.Invoke();
     }
 
     public override void CancelEvent()

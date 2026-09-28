@@ -37,7 +37,7 @@ public class CameraShake : MonoBehaviour
 
     public void TemblarDurante(float segundos) => Temblar(segundos, intensidad);
 
-    public void Temblar(float duracionTemblor, float intensidadTemblor)
+    public void Temblar(float duracionTemblor= 10000, float intensidadTemblor = 0.15f)
     {
         if (rutina != null)
             StopCoroutine(rutina);
@@ -72,10 +72,9 @@ public class CameraShake : MonoBehaviour
 
             transform.localPosition = posOriginal + new Vector3(x, y, 0f) * intensidadTemblor * fuerza;
             transform.localRotation = rotOriginal * Quaternion.Euler(0f, 0f, giro * rotacionMax * fuerza);
-
             yield return null;
         }
-
+        
         Restaurar();
     }
 
