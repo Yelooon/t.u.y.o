@@ -77,7 +77,7 @@ public class BusBrakeEvent : BusEventBase
             ShowProgress("Mareado", 1f - timer / fallEffectDuration);
             yield return null;
         }
-
+        onPlayerRecovered?.Invoke();
         PlayerIsStunned = false;
     }
 

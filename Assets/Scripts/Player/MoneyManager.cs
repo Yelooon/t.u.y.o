@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Los 3 billetes de 100K = las 3 vidas del jugador.
@@ -20,6 +21,7 @@ public class MoneyManager : MonoBehaviour
     /// <summary>(billetes restantes, razón)</summary>
     public event Action<int, string> BillLost;
     public event Action OutOfMoney;
+    public bool perder;
 
     private void Awake()
     {
@@ -31,12 +33,7 @@ public class MoneyManager : MonoBehaviour
 
         Instance = this;
         Bills = startingBills;
-    }
 
-    private void OnDestroy()
-    {
-        if (Instance == this)
-            Instance = null;
     }
 
     public void LoseBill(string reason)
@@ -51,6 +48,10 @@ public class MoneyManager : MonoBehaviour
         BillLost?.Invoke(Bills, reason);
 
         if (Bills <= 0)
+        {
+            perder = true;
             OutOfMoney?.Invoke();
+        }
+            
     }
 }

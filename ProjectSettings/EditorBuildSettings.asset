@@ -15,8 +15,11 @@ EditorBuildSettings:
     path: Assets/Scenes/Pruebas.unity
     guid: 8cfa9b024230bed4e92df9f9f987e531
   - enabled: 1
-    path: Assets/Scenes/silva.unity
-    guid: c18044ac6eaf71b479b5b614d4f84257
+    path: Assets/Scenes/Pruebas 1.unity
+    guid: ffd908f2c288d7641b5b506069dbdd0c
+  - enabled: 1
+    path: Assets/Scenes/Pruebas 2.unity
+    guid: ea53d5ae14004b14fb901c9414fa8ccc
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

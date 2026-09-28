@@ -1,5 +1,7 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -14,16 +16,10 @@ public class SceneFader : MonoBehaviour
 
     private CanvasGroup grupo;
     private bool enTransicion;
-
+    public string sceneName;
     public bool EnTransicion => enTransicion;
-
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
@@ -110,5 +106,10 @@ public class SceneFader : MonoBehaviour
         rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
+    }
+    private void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            CambiarEscena(sceneName);
     }
 }
