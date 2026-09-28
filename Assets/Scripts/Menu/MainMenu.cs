@@ -5,14 +5,24 @@ using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem; // Requerido para el Nuevo Input System
 
 /// <summary>
-/// Gestor principal del menú: escena, transiciones, paneles (Tutorial/Salir/Jugar)
-/// y secuencia de historieta/cómic introductorio.
+/// Gestor principal del menú: escena, transiciones, paneles (Tutorial/Salir/Jugar),
+/// secuencia de logos iniciales (Splash) y historieta/cómic introductorio.
 /// </summary>
 public class MainMenu : MonoBehaviour
 {
     [Header("Escena del juego")]
     [Tooltip("Nombre EXACTO de la escena del juego en Build Settings.")]
-    [SerializeField] private string gameSceneName = "BusScene";
+    [SerializeField] private string gameSceneName = "Pruebas";
+
+    [Header("Secuencia Intro / Logos (Solo primera vez)")]
+    [Tooltip("Panel UI donde se mostrarán los logos/pantallas de inicio.")]
+    [SerializeField] private GameObject introPanel;
+    [Tooltip("Componente Image donde se renderiza cada logo de la intro.")]
+    [SerializeField] private Image introDisplayImage;
+    [Tooltip("Arreglo de imágenes/sprites que se mostrarán una por una al arrancar.")]
+    [SerializeField] private Sprite[] introSprites;
+    [Tooltip("Duración en segundos que se muestra cada imagen en pantalla.")]
+    [SerializeField] private float introDisplayDuration = 2f;
 
     [Header("Interfaz UI")]
     [Tooltip("Panel del tutorial que se activará/desactivará.")]
@@ -23,7 +33,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private GameObject comicPanel;
     [Tooltip("Componente Image de UI donde se cargará cada viñeta.")]
     [SerializeField] private Image comicDisplayImage;
-    [Tooltip("Lista de las 4 imágenes/sprites del cómic en orden.")]
+    [Tooltip("Lista de las imágenes/sprites del cómic en orden.")]
     [SerializeField] private Sprite[] comicSprites;
     [Tooltip("Objeto o texto opcional que dice 'Presiona ESC para omitir'.")]
     [SerializeField] private GameObject skipPrompt;
@@ -37,6 +47,9 @@ public class MainMenu : MonoBehaviour
 
     [Header("Audio (opcional)")]
     [SerializeField] private AudioSource clickSound;
+
+    // Persiste durante la sesión del ejecutable
+    private static bool hasShownIntro = false;
 
     private bool isLoading = false;
     private bool isComicActive = false;
@@ -58,8 +71,21 @@ public class MainMenu : MonoBehaviour
         if (skipPrompt != null)
             skipPrompt.SetActive(false);
 
-        if (fadePanel != null)
-            StartCoroutine(FadeFromBlack());
+        if (introPanel != null)
+            introPanel.SetActive(false);
+
+        // Comprobamos si es la primera vez que se entra al menú en esta sesión de juego
+        if (!hasShownIntro && introPanel != null && introDisplayImage != null && introSprites != null && introSprites.Length > 0)
+        {
+            hasShownIntro = true; // Guardamos que ya se mostró
+            StartCoroutine(PlayIntroSplashSequence());
+        }
+        else
+        {
+            // Si ya se mostró antes o no hay imágenes, entramos directamente al menú
+            if (fadePanel != null)
+                StartCoroutine(FadeFromBlack());
+        }
     }
 
     private void Update()
@@ -84,7 +110,43 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    // Botón / Objeto: Jugar
+    // --- SECUENCIA DE INTRO / LOGOS INICIALES ---
+
+    private IEnumerator PlayIntroSplashSequence()
+    {
+        introPanel.SetActive(true);
+
+        // Aseguramos pantalla en negro al iniciar
+        if (fadePanel != null)
+        {
+            fadePanel.gameObject.SetActive(true);
+            fadePanel.alpha = 1f;
+        }
+
+        for (int i = 0; i < introSprites.Length; i++)
+        {
+            introDisplayImage.sprite = introSprites[i];
+
+            // Revelar la imagen actual
+            yield return FadeFromBlack();
+
+            // Tiempo visible en pantalla (2 segundos por defecto)
+            yield return new WaitForSeconds(introDisplayDuration);
+
+            // Ocultar la imagen con fundido a negro
+            yield return FadeToBlack();
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        // Cerramos el panel de la intro
+        introPanel.SetActive(false);
+
+        // Revelamos el Menú Principal
+        yield return FadeFromBlack();
+    }
+
+    // --- BOTONES PRINCIPALES ---
+
     public void Play()
     {
         if (isLoading) return;
@@ -92,14 +154,12 @@ public class MainMenu : MonoBehaviour
         isLoading = true;
         PlayClick();
 
-        // Si hay un cómic configurado con imágenes, iniciamos la secuencia con delay
         if (comicPanel != null && comicDisplayImage != null && comicSprites != null && comicSprites.Length > 0)
         {
             StartCoroutine(StartComicSequence());
         }
         else
         {
-            // Si no hay imágenes de cómic, va directo al juego con el delay
             StartCoroutine(LoadGameWithDelay());
         }
     }
@@ -110,13 +170,9 @@ public class MainMenu : MonoBehaviour
     {
         isTransitioning = true;
 
-        // Espera de 3 segundos antes de iniciar el fundido/transición al cómic
         yield return new WaitForSeconds(playDelayDuration);
-
-        // Fade Out (a negro)
         yield return FadeToBlack();
 
-        // Preparamos la primera imagen y activamos el panel
         currentComicIndex = 0;
         comicDisplayImage.sprite = comicSprites[currentComicIndex];
         comicPanel.SetActive(true);
@@ -124,7 +180,6 @@ public class MainMenu : MonoBehaviour
         if (skipPrompt != null)
             skipPrompt.SetActive(true);
 
-        // Fade In (revelar la primera viñeta)
         yield return FadeFromBlack();
 
         isComicActive = true;
@@ -138,25 +193,18 @@ public class MainMenu : MonoBehaviour
 
         currentComicIndex++;
 
-        // Si ya pasamos la última imagen, salimos al juego
         if (currentComicIndex >= comicSprites.Length)
         {
             yield return EndComicAndLoadGame();
         }
         else
         {
-            // 1. Fade Out: Se oscurece la pantalla por completo
             yield return FadeToBlack();
-
-            // 2. Breve pausa en negro para suavizar la transición
             yield return new WaitForSeconds(0.15f);
 
-            // 3. Cambiamos la imagen
             comicDisplayImage.sprite = comicSprites[currentComicIndex];
 
-            // 4. Fade In: Reaparece la vista con la nueva viñeta
             yield return FadeFromBlack();
-
             isTransitioning = false;
         }
     }
@@ -172,7 +220,6 @@ public class MainMenu : MonoBehaviour
     {
         isComicActive = false;
 
-        // Fade a negro final
         yield return FadeToBlack();
 
         if (skipPrompt != null)
