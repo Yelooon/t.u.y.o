@@ -22898,7 +22898,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e9a11ebfd823b74a9b3a2baea95df13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BusAirConditioner
-  currentState: 0
+  currentState: 1
   airVentRenderer: {fileID: 2101973978}
   airOnMaterial: {fileID: 2100000, guid: 3e8297b9e46a71242869c23c58b81275, type: 2}
   airOffMaterial: {fileID: 2100000, guid: 70a1aee93b53bb4469db45b8239f13a0, type: 2}
