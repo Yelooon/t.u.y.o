@@ -452,7 +452,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &165635273
 RectTransform:
   m_ObjectHideFlags: 0
@@ -517,9 +517,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1712421579}
-        m_TargetAssemblyTypeName: perder, Assembly-CSharp
-        m_MethodName: menu
+      - m_Target: {fileID: 2128107672}
+        m_TargetAssemblyTypeName: BusHUD, Assembly-CSharp
+        m_MethodName: GoToMainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13359,7 +13359,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1454902485}
-  - component: {fileID: 1454902483}
   - component: {fileID: 1454902487}
   m_Layer: 0
   m_Name: GameManager
@@ -13368,21 +13367,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1454902483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1454902482}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b576927fe1e8af846aefb0ae93bfe3d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
-  startingBills: 3
-  billValue: 100000
-  perder: 0
 --- !u!4 &1454902485
 Transform:
   m_ObjectHideFlags: 0
@@ -14048,8 +14032,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1956069662bb06f4ea7c26cff2c6439b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CandyQTE
-  timeLimit: 5
-  sequenceLength: 4
+  timeLimit: 2
+  sequenceLength: 3
   qtePanel: {fileID: 765459210}
   keyText: {fileID: 1734202707}
   timerBar: {fileID: 496925108}
@@ -15193,7 +15177,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1712421580}
-  - component: {fileID: 1712421579}
   m_Layer: 0
   m_Name: perder
   m_TagString: Untagged
@@ -15201,19 +15184,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1712421579
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1712421578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b00387a1ff1ea844b51fdf130a1a8ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::perder
-  panel: {fileID: 898654768}
 --- !u!4 &1712421580
 Transform:
   m_ObjectHideFlags: 0
@@ -22571,6 +22541,7 @@ GameObject:
   - component: {fileID: 2128107671}
   - component: {fileID: 2128107670}
   - component: {fileID: 2128107672}
+  - component: {fileID: 2128107673}
   m_Layer: 0
   m_Name: busevent
   m_TagString: Untagged
@@ -22590,7 +22561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8ab73292f1883f47967ec51ddf354f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BusEventManager
-  money: {fileID: 1454902483}
+  money: {fileID: 2128107673}
   airConditioner: {fileID: 2101973982}
   tripDuration: 120
   autoStart: 1
@@ -22661,7 +22632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BusHUD
   eventManager: {fileID: 2128107670}
-  money: {fileID: 1454902483}
+  money: {fileID: 2128107673}
   temperature: {fileID: 1553513292}
   airConditioner: {fileID: 2101973982}
   billIcons: []
@@ -22689,6 +22660,21 @@ MonoBehaviour:
   warningColor: {r: 0, g: 0, b: 0, a: 0.9}
   dangerColor: {r: 0.85, g: 0.15, b: 0.15, a: 0.9}
   successColor: {r: 0.2, g: 0.7, b: 0.3, a: 0.9}
+--- !u!114 &2128107673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2128107669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b576927fe1e8af846aefb0ae93bfe3d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
+  startingBills: 3
+  billValue: 100000
+  perder: 0
 --- !u!1 &2142606826
 GameObject:
   m_ObjectHideFlags: 0
@@ -22739,7 +22725,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb4d310dfc7c5a34ea529850347132b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PocketBills
-  money: {fileID: 0}
+  money: {fileID: 2128107673}
   billModels:
   - {fileID: 189317698}
   - {fileID: 747451876}
@@ -26505,7 +26491,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 6699446615349125189, guid: b95608d30b55b3e4fb013a1f8c1a525e, type: 3}
+  - {fileID: 2100000, guid: da45bb31d93b7954a945d2fd050cd02a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
