@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PickpocketEvent : BusEventBase
 {
@@ -29,6 +30,8 @@ public class PickpocketEvent : BusEventBase
 
     [Header("Animator Parameters")]
     [SerializeField] private string lugarParamName = "Lugar";
+    public UnityEvent cambioPosicion;
+    public UnityEvent verificarVista;
 
     private int currentPosition = 1;
 
@@ -76,6 +79,7 @@ public class PickpocketEvent : BusEventBase
 
     private IEnumerator CheckIfPlayerWatches()
     {
+        verificarVista?.Invoke();
         float watchTimer = 0f;
         float dangerTimer = 0f;
 
@@ -118,6 +122,7 @@ public class PickpocketEvent : BusEventBase
 
     private void MoveToPosition(int newPosition)
     {
+        cambioPosicion?.Invoke();
         currentPosition = newPosition;
 
         switch (newPosition)

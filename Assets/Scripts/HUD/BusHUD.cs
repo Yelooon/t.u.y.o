@@ -158,7 +158,7 @@ public class BusHUD : MonoBehaviour
             tripSlider.value = eventManager.TripProgress;
 
         if (tripText != null)
-            tripText.text = $"Viaje {Mathf.RoundToInt(eventManager.TripProgress * 100f)}%";
+            tripText.text = $"{Mathf.RoundToInt(eventManager.TripProgress * 100f)}%";
     }
 
     private void UpdateTemperature()
@@ -186,9 +186,9 @@ public class BusHUD : MonoBehaviour
         if (temperature.Condition == BusTemperatureSystem.TemperatureCondition.Normal)
             text = "Recuperándote...";
         else if (temperature.IsAffected)
-            text = isCold ? "¡Te estás congelando!" : "¡Te estás asando!";
+            text = isCold ? "You're freezing!" : "You're sweating!";
         else
-            text = isCold ? "Hace frío: cierra la ventana" : "Hace calor: abre la ventana";
+            text = isCold ? "It's cold: close the window" : "It's hot: open the window";
 
         if (temperatureText != null)
         {

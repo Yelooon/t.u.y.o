@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MotorcycleRobberyEvent : BusEventBase
 {
@@ -18,6 +19,7 @@ public class MotorcycleRobberyEvent : BusEventBase
     [SerializeField] private AudioSource motorcycleAudio;
     [Tooltip("Muestra subtítulos de los sonidos (accesibilidad). Desactívalo si quieres que sea solo por audio.")]
     [SerializeField] private bool showSoundCaptions = true;
+    
 
     // Solo puede ocurrir con la ventana abierta
     public override bool CanTrigger =>
@@ -25,7 +27,10 @@ public class MotorcycleRobberyEvent : BusEventBase
 
     // Se mantiene para los botones de debug
     public void TriggerRobbery() => Trigger();
-
+    public UnityEvent antesRobo;
+    public UnityEvent duranteRobo;
+    public UnityEvent Robo;
+    public UnityEvent evitarRobo;
     public override void Trigger()
     {
         if (!CanTrigger)
@@ -39,8 +44,8 @@ public class MotorcycleRobberyEvent : BusEventBase
 
     private IEnumerator RobberySequence()
     {
+        antesRobo?.Invoke();
         BeginEvent();
-
         if (motorcycleAudio != null)
             motorcycleAudio.Play();
 
@@ -58,12 +63,13 @@ public class MotorcycleRobberyEvent : BusEventBase
 
         ShowStranger();
         Alert("¡CIERRA LA VENTANA!", AlertLevel.Danger);
-
+        duranteRobo?.Invoke();
         float timer = 0f;
         while (timer < reactionTime)
         {
             if (!window.IsOpen)
             {
+                evitarRobo?.Invoke();
                 Alert("¡Cerraste la ventana a tiempo!", AlertLevel.Success);
                 FinishRobbery();
                 yield break;
@@ -76,7 +82,7 @@ public class MotorcycleRobberyEvent : BusEventBase
 
         Alert("¡RAPONAZO!", AlertLevel.Danger);
         StealBill("Raponazo en moto");
-
+        Robo?.Invoke();
         FinishRobbery();
     }
 

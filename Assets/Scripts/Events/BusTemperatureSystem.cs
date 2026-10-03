@@ -103,8 +103,10 @@ public class BusTemperatureSystem : MonoBehaviour
 
             if (cause == TemperatureCondition.Cold)
             {
+                /**
                 Debug.Log("PLAYER SE CONGELA");
                 onPlayerFreeze?.Invoke();
+                **/
             }
             else
             {

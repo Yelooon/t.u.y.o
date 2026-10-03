@@ -1,7 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Controla el viaje: dispara los eventos de forma aleatoria,
@@ -52,15 +56,17 @@ public class BusEventManager : MonoBehaviour
     [SerializeField] private Vector2 acWorkingDuration = new Vector2(8f, 15f);
     [Tooltip("...y pasa dañado la mayor parte del viaje, para que la ventana esté abierta.")]
     [SerializeField] private Vector2 acFailedDuration = new Vector2(25f, 45f);
+    public GameObject panelGameOver;
 
     public event Action TripStarted;
     public event Action TripCompleted;
     public event Action GameOver;
-
+    public string escenaSig;
     public bool IsRunning { get; private set; }
     public float TripTime { get; private set; }
     public float TripDuration => tripDuration;
     public float TripProgress => tripDuration > 0f ? Mathf.Clamp01(TripTime / tripDuration) : 0f;
+
 
     public IEnumerable<BusEventBase> RegisteredEvents
     {
@@ -81,9 +87,11 @@ public class BusEventManager : MonoBehaviour
 
         if (money != null)
             money.OutOfMoney += HandleOutOfMoney;
-
-        if (autoStart)
-            StartTrip();
+        
+    }
+    private void Awake()
+    {
+        iniciar();
     }
 
     private void OnDestroy()
@@ -101,6 +109,8 @@ public class BusEventManager : MonoBehaviour
 
         if (TripTime >= tripDuration)
             EndTrip(true);
+        if (Keyboard.current != null && Keyboard.current.altKey.wasPressedThisFrame)
+            iniciar();
     }
 
     public void StartTrip()
@@ -221,11 +231,24 @@ public class BusEventManager : MonoBehaviour
         {
             Debug.Log("Llegaste a tu destino con la plata.");
             TripCompleted?.Invoke();
+            SceneFader.Instance.CambiarEscena(escenaSig);
         }
         else
         {
             Debug.Log("Te quedaste sin plata. GAME OVER.");
             GameOver?.Invoke();
         }
+    }
+    public void perder()
+    {
+        if(panelGameOver)
+        {
+           EndTrip(false);
+        }
+    }
+    private void iniciar()
+    {
+        Debug.Log("Iniciando viaje...");
+        StartTrip();
     }
 }
