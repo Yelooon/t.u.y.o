@@ -162,6 +162,10 @@ public class MainMenu : MonoBehaviour
         {
             StartCoroutine(LoadGameWithDelay());
         }
+
+        isLoading = true;
+        MoneyManager.StartNewGame();
+        PlayClick();
     }
 
     // --- SECUENCIA DEL CÓMIC ---
